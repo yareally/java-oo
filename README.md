@@ -1,5 +1,11 @@
 # Java Operator Overloading #
 
+Forked from http://amelentev.github.io/java-oo/ because I got anxious to use it on Intellij IDEA UE before he had
+all the bugs worked out of it. For now, all I have changed is fixing some exceptions (Field/MethodNotFound & NullPointer)
+in order to get it working okay on Intellij. Eventually want to get it working on Android, but as of now, it's not playing
+nice within intellij at least (have not tried with ant/eclipse/etc).
+
+
 Implementation of ([Scala-like]) [Operator Overloading] for Java language.
 Works with standard JavaC compiler, [Netbeans IDE], [Eclipse IDE], [IntelliJ IDEA] IDE and any build tools.
 
@@ -105,7 +111,7 @@ index:
 
 Implicit type conversion:
 
-if _expression_ has type _ExpressionType_ and there are static method _RequredType RequredType#valueOf(ExpressionType)_<br/> 
+if _expression_ has type _ExpressionType_ and there are static method _RequredType RequredType#valueOf(ExpressionType)_<br/>
 then _expression_ can be assigned to _RequredType_.
 example: <br/>
 `BigInteger a = 1` translates to `BigInteger a = BigInteger.valueOf(1)`
@@ -124,7 +130,7 @@ use operators on them "out of the box". Or you can add these methods to your cla
 	- Patch Eclipse Java Compiler to allow OO.
 
 - idea-oo-plugin
-	- [IntelliJ IDEA] IDE plugin for OO support. 
+	- [IntelliJ IDEA] IDE plugin for OO support.
 	- Modify Java frontend in IDEA to allow OO. Need javac-oo-plugin to actually compile.
 
 - [javac-oo]
