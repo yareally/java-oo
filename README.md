@@ -5,6 +5,8 @@ all the bugs worked out of it. For now, all I have changed is fixing some except
 in order to get it working okay on Intellij. Eventually want to get it working on Android, but as of now, it's not playing
 nice within intellij at least (have not tried with ant/eclipse/etc).
 
+EDIT: It works with building in ant, but building directly in Intellij complains like a backseat driver -_-
+
 
 Implementation of ([Scala-like]) [Operator Overloading] for Java language.
 Works with standard JavaC compiler, [Netbeans IDE], [Eclipse IDE], [IntelliJ IDEA] IDE and any build tools.
