@@ -18,54 +18,96 @@ import com.intellij.lang.ASTNode;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.psi.impl.source.tree.JavaElementType;
 import com.intellij.psi.tree.IElementType;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class Util {
-    public static <T> Object get(Class<T> clas, T obj, String field) {
+@SuppressWarnings({"UncheckedExceptionClass", "CheckedExceptionClass", "WeakerAccess"})
+public class Util
+{
+    private Util() {}
+
+    public static <T> Object get(Class<T> clas, T obj, String... fields)
+    {
         try {
-            Field f = clas.getDeclaredField(field);
+            for (Field classField : clas.getDeclaredFields()) {
+                for (String field : fields) {
+                    if (classField.getName().equals(field)) {
+                        classField.setAccessible(true);
+                        return classField.get(obj);
+                    }
+                }
+            }
+            // basically to avoid it returning null. Not the best solution really, but it should never
+            // reach here either.
+            Field f = clas.getDeclaredField(fields[0]);
             f.setAccessible(true);
             return f.get(obj);
         } catch (Exception e) {
             throw sneakyThrow(e);
         }
     }
-    public static void set(Class<?> cl, Object obj, String field, Object val) {
+
+    public static void set(Class<?> cl, Object obj, Object val, String... fields)
+    {
         try {
-            Field f = cl.getDeclaredField(field);
-            f.setAccessible(true);
-            f.set(obj, val);
+            for (Field classField : cl.getDeclaredFields()) {
+                for (String field : fields) {
+                    if (classField.getName().equals(field)) {
+                        classField.setAccessible(true);
+                        classField.set(obj, val);
+                    }
+                }
+            }
         } catch (Exception e) {
             throw sneakyThrow(e);
         }
     }
-    public static Object invoke(Class cl, Object obj, String method, Class[] targs, Object[] args) {
+
+    public static Object invoke(Class<?> cl, String[] method, Class<?>[] targs, Object[] args)
+    {
         try {
-            Method m = cl.getDeclaredMethod(method, targs);
+            for (Method possibleMethod : cl.getDeclaredMethods()) {
+                for (String methodName : method) {
+                    if (possibleMethod.getName().equals(methodName)) {
+                        possibleMethod.setAccessible(true);
+                        return possibleMethod.invoke(null, args);
+                    }
+                }
+            }
+            // basically to avoid it returning null. Not the best solution really, but it should never
+            // reach here either.
+            Method m = cl.getDeclaredMethod(method[0], targs);
             m.setAccessible(true);
-            return m.invoke(obj, args);
+            return m.invoke(null, args);
         } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof ProcessCanceledException)
+            if (e.getTargetException() instanceof ProcessCanceledException) {
                 return null; // cancelled?
+            }
             throw sneakyThrow(e);
         } catch (Exception e) {
             throw sneakyThrow(e);
         }
     }
-    public static void setJavaElementConstructor(IElementType et, Class<? extends ASTNode> clas) {
+
+    public static void setJavaElementConstructor(IElementType et, Class<? extends ASTNode> clas)
+    {
         try {
-            set(JavaElementType.JavaCompositeElementType.class, et, "myConstructor", clas.getConstructor());
-        } catch (NoSuchMethodException e) {
+            set(JavaElementType.JavaCompositeElementType.class, et, clas.getConstructor(), "myConstructor", "a");
+        } catch (Exception e) {
             throw sneakyThrow(e);
         }
     }
-    public static RuntimeException sneakyThrow(Throwable ex) {
-        return Util.<RuntimeException>sneakyThrowInner(ex);
+
+    public static RuntimeException sneakyThrow(Throwable ex)
+    {
+        return sneakyThrowInner(ex);
     }
-    private static <T extends Throwable> T sneakyThrowInner(Throwable ex) throws T {
+
+    private static <T extends Throwable> T sneakyThrowInner(Throwable ex) throws T
+    {
         throw (T) ex;
     }
 }

@@ -24,15 +24,28 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class OOHighlightVisitorImpl extends HighlightVisitorImpl {
-    @NotNull PsiResolveHelper myResolveHelper;
-    public OOHighlightVisitorImpl(@NotNull PsiResolveHelper resolveHelper) {
+@SuppressWarnings("WeakerAccess")
+public class OOHighlightVisitorImpl extends HighlightVisitorImpl implements Cloneable
+{
+    @NotNull
+    PsiResolveHelper myResolveHelper;
+
+    public OOHighlightVisitorImpl(@NotNull PsiResolveHelper resolveHelper)
+    {
         super(resolveHelper);
         myResolveHelper = resolveHelper;
     }
 
+    @Override
+    @NotNull
+    public final OOHighlightVisitorImpl clone()
+    {
+        return new OOHighlightVisitorImpl(myResolveHelper);
+    }
+
     @Override // Binary OO
-    public void visitPolyadicExpression(PsiPolyadicExpression expression) {
+    public void visitPolyadicExpression(PsiPolyadicExpression expression)
+    {
         super.visitPolyadicExpression(expression);
         if (isHighlighted(expression)) {
             PsiExpression[] operands = expression.getOperands();
@@ -43,87 +56,95 @@ public class OOHighlightVisitorImpl extends HighlightVisitorImpl {
                 // TODO: case A + A + int ? A.add(A) : int
                 lType = OOResolver.getOOType(lType, rType, expression.getTokenBeforeOperand(operand));
             }
-            if (lType != OOResolver.NoType)
+            if (lType != OOResolver.NoType) {
                 removeLastHighlight();
+            }
         }
     }
 
     @Override // Unary OO
-    public void visitPrefixExpression(PsiPrefixExpression expression) {
+    public void visitPrefixExpression(PsiPrefixExpression expression)
+    {
         super.visitPrefixExpression(expression);
         if (isHighlighted(expression)
-                && OOResolver.getOOType(expression) != OOResolver.NoType) {
+            && OOResolver.getOOType(expression) != OOResolver.NoType) {
             removeLastHighlight();
         }
     }
 
     @Override // Index-Get OO
-    public void visitExpression(PsiExpression expression) {
+    public void visitExpression(PsiExpression expression)
+    {
         super.visitExpression(expression);
         if (expression instanceof PsiArrayAccessExpression) {
             PsiArrayAccessExpression paa = (PsiArrayAccessExpression) expression;
-            if (isHighlighted(paa.getArrayExpression()) && OOResolver.indexGet((PsiArrayAccessExpression) expression)!=OOResolver.NoType)
+            if (isHighlighted(paa.getArrayExpression()) && OOResolver.indexGet((PsiArrayAccessExpression) expression) != OOResolver.NoType) {
                 removeLastHighlight();
+            }
         }
     }
 
     @Override
-    public void visitAssignmentExpression(PsiAssignmentExpression ass) {
+    public void visitAssignmentExpression(PsiAssignmentExpression ass)
+    {
         super.visitAssignmentExpression(ass);
         if ("=".equals(ass.getOperationSign().getText())) {
             // Index-Set OO
             if (ass.getLExpression() instanceof PsiArrayAccessExpression
-                    && isHighlighted(ass.getLExpression())) {
+                && isHighlighted(ass.getLExpression())) {
                 PsiArrayAccessExpression paa = (PsiArrayAccessExpression) ass.getLExpression();
-                if (OOResolver.indexSet(paa, ass.getRExpression())!=OOResolver.NoType)
+                if (OOResolver.indexSet(paa, ass.getRExpression()) != OOResolver.NoType) {
                     removeLastHighlight();
+                }
             }
             // Implicit type conversion in assignment
-            if (isHighlighted(ass) && OOResolver.isTypeConvertible(ass.getLExpression().getType(), ass.getRExpression()))
+            if (isHighlighted(ass) && OOResolver.isTypeConvertible(ass.getLExpression().getType(), ass.getRExpression())) {
                 removeLastHighlight();
+            }
         }
     }
 
     @Override // Implicit type conversion in variable declaration
-    public void visitVariable(PsiVariable var) {
+    public void visitVariable(PsiVariable var)
+    {
         super.visitVariable(var);
-        if (var.hasInitializer() && isHighlighted(var) && OOResolver.isTypeConvertible(var.getType(), var.getInitializer()))
+        if (var.hasInitializer() && isHighlighted(var) && OOResolver.isTypeConvertible(var.getType(), var.getInitializer())) {
             removeLastHighlight();
+        }
     }
 
-    private HighlightInfoHolder getMyHolder() {
-        return (HighlightInfoHolder) Util.get(HighlightVisitorImpl.class, this, "myHolder");
+    private HighlightInfoHolder getMyHolder()
+    {
+        return (HighlightInfoHolder) Util.get(HighlightVisitorImpl.class, this, "myHolder", "b");
     }
 
-    private boolean isHighlighted(PsiElement expression) {
+    private boolean isHighlighted(PsiElement expression)
+    {
         HighlightInfoHolder myHolder = getMyHolder();
         if (myHolder.hasErrorResults()) {
-            HighlightInfo hi = myHolder.get(myHolder.size()-1);
-            if (hi.getSeverity() != HighlightSeverity.ERROR) return false;
+            HighlightInfo hi = myHolder.get(myHolder.size() - 1);
+            if (hi.getSeverity() != HighlightSeverity.ERROR) {
+                return false;
+            }
             if (expression instanceof PsiVariable) { // workaround for variable declaration incompatible types highlight
                 PsiVariable v = (PsiVariable) expression;
-                return hi.startOffset==v.getTypeElement().getTextRange().getStartOffset()  && hi.endOffset==v.getTextRange().getEndOffset();
+                return hi.startOffset == v.getTypeElement().getTextRange().getStartOffset() && hi.endOffset == v.getTextRange().getEndOffset();
             }
             TextRange tr = expression.getTextRange();
-            return hi.startOffset==tr.getStartOffset() && hi.endOffset==tr.getEndOffset();
+            return hi.startOffset == tr.getStartOffset() && hi.endOffset == tr.getEndOffset();
         }
         return false;
     }
 
     // TODO: what highlightInfo to delete?
-    private void removeLastHighlight() {
+    private void removeLastHighlight()
+    {
         HighlightInfoHolder holder = getMyHolder();
         // remove highlight
-        List<HighlightInfo> myInfos = (List<HighlightInfo>) Util.get(HighlightInfoHolder.class, holder, "myInfos");
-        myInfos.remove(getMyHolder().size()-1);
+        List<HighlightInfo> myInfos = (List<HighlightInfo>) Util.get(HighlightInfoHolder.class, holder, "myInfos", "e");
+        myInfos.remove(getMyHolder().size() - 1);
         // update error count
-        Util.set(HighlightInfoHolder.class, holder, "myErrorCount",
-                ((Integer)Util.get(HighlightInfoHolder.class, holder, "myErrorCount"))-1);
-    }
-
-    @Override
-    @NotNull
-    public OOHighlightVisitorImpl clone() {
-        return new OOHighlightVisitorImpl(myResolveHelper);
+        Util.set(HighlightInfoHolder.class, holder,
+            (Integer) Util.get(HighlightInfoHolder.class, holder, "myErrorCount", "d") - 1, "myErrorCount", "d");
     }
 }

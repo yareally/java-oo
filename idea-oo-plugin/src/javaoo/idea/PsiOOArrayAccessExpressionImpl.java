@@ -17,10 +17,12 @@ package javaoo.idea;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.java.PsiArrayAccessExpressionImpl;
 
-public class PsiOOArrayAccessExpressionImpl extends PsiArrayAccessExpressionImpl {
+public class PsiOOArrayAccessExpressionImpl extends PsiArrayAccessExpressionImpl
+{
     @Override
-    public PsiType getType() {
+    public PsiType getType()
+    {
         PsiType res = super.getType();
-        return res!=null ? res : OOResolver.indexGet(this);
+        return res != null ? res : OOResolver.indexGet(this);
     }
 }

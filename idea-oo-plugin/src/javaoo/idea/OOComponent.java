@@ -33,21 +33,27 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-public class OOComponent implements ProjectComponent, OOMethods {
-    private static final Logger LOG = Logger.getInstance("#"+OOComponent.class.getName());
-
+@SuppressWarnings("WeakerAccess")
+public class OOComponent implements ProjectComponent, OOMethods
+{
+    private static final Logger LOG = Logger.getInstance("#" + OOComponent.class.getName());
     private Project project;
-    public OOComponent(Project project) {
+
+    public OOComponent(Project project)
+    {
         this.project = project;
     }
 
-    @NotNull @Override
-    public String getComponentName() {
+    @NotNull
+    @Override
+    public String getComponentName()
+    {
         return "Java Operator Overloading plugin";
     }
 
     @Override
-    public void initComponent() {
+    public void initComponent()
+    {
         LOG.info("OO init");
         Util.setJavaElementConstructor(JavaElementType.BINARY_EXPRESSION, PsiOOBinaryExpressionImpl.class);
         Util.setJavaElementConstructor(JavaElementType.PREFIX_EXPRESSION, PsiOOPrefixExpressionImpl.class);
@@ -55,7 +61,7 @@ public class OOComponent implements ProjectComponent, OOMethods {
         Util.setJavaElementConstructor(JavaElementType.ARRAY_ACCESS_EXPRESSION, PsiOOArrayAccessExpressionImpl.class);
 
         ExtensionPoint<HighlightVisitor> ep = Extensions.getArea(project).getExtensionPoint(HighlightVisitor.EP_HIGHLIGHT_VISITOR);
-        Set<ExtensionComponentAdapter> hadapters = (Set<ExtensionComponentAdapter>) Util.get(ExtensionPointImpl.class, (ExtensionPointImpl) ep, "myExtensionAdapters");
+        Set<ExtensionComponentAdapter> hadapters = (Set<ExtensionComponentAdapter>) Util.get(ExtensionPointImpl.class, (ExtensionPointImpl<HighlightVisitor>) ep, "myExtensionAdapters");
         for (ExtensionComponentAdapter ca : hadapters) {
             if (ca.isAssignableTo(HighlightVisitorImpl.class)) {
                 hadapters.remove(ca);
@@ -63,8 +69,10 @@ public class OOComponent implements ProjectComponent, OOMethods {
             }
         }
     }
+
     @Override
-    public void disposeComponent() {
+    public void disposeComponent()
+    {
         LOG.info("OO dispose");
         Util.setJavaElementConstructor(JavaElementType.BINARY_EXPRESSION, PsiBinaryExpressionImpl.class);
         Util.setJavaElementConstructor(JavaElementType.PREFIX_EXPRESSION, PsiPrefixExpressionImpl.class);
@@ -72,6 +80,9 @@ public class OOComponent implements ProjectComponent, OOMethods {
         Util.setJavaElementConstructor(JavaElementType.ARRAY_ACCESS_EXPRESSION, PsiArrayAccessExpressionImpl.class);
     }
 
+    @Override
     public void projectOpened() {}
+
+    @Override
     public void projectClosed() {}
 }

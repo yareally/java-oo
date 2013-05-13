@@ -17,10 +17,12 @@ package javaoo.idea;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.java.PsiPrefixExpressionImpl;
 
-public class PsiOOPrefixExpressionImpl extends PsiPrefixExpressionImpl {
+public class PsiOOPrefixExpressionImpl extends PsiPrefixExpressionImpl
+{
     @Override
-    public PsiType getType() {
+    public PsiType getType()
+    {
         PsiType res = super.getType();
-        return res!=null ? res : OOResolver.getOOType(this);
+        return res != null ? res : OOResolver.getOOType(this);
     }
 }

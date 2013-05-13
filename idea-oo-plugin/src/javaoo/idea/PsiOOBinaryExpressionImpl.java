@@ -20,23 +20,32 @@ import com.intellij.psi.impl.source.resolve.JavaResolveCache;
 import com.intellij.psi.impl.source.tree.java.PsiBinaryExpressionImpl;
 import com.intellij.util.Function;
 
-public class PsiOOBinaryExpressionImpl extends PsiBinaryExpressionImpl {
-    private static final Function<PsiBinaryExpressionImpl,PsiType> OO_TYPE_EVALUATOR = new Function<PsiBinaryExpressionImpl, PsiType>() {
+public class PsiOOBinaryExpressionImpl extends PsiBinaryExpressionImpl
+{
+    private static final Function<PsiBinaryExpressionImpl, PsiType> OO_TYPE_EVALUATOR = new Function<PsiBinaryExpressionImpl, PsiType>()
+    {
         @Override
-        public PsiType fun(PsiBinaryExpressionImpl expression) {
-            PsiType type = (PsiType) Util.invoke(PsiBinaryExpressionImpl.class, null, "doGetType",
+        public PsiType fun(PsiBinaryExpressionImpl expression)
+        {
+            PsiType type =
+                (PsiType) Util.invoke(
+                    PsiBinaryExpressionImpl.class,
+                    new String[]{"doGetType", "a"},
                     new Class[]{PsiBinaryExpressionImpl.class},
                     new Object[]{expression});
             PsiType lType = expression.getLOperand().getType();
+
             if (type != null && type != OOResolver.NoType
-                    && (type != PsiType.INT || lType instanceof PsiPrimitiveType || PsiPrimitiveType.getUnboxedType(lType)!=null))
+                && (type != PsiType.INT || lType instanceof PsiPrimitiveType || PsiPrimitiveType.getUnboxedType(lType) != null)) {
                 return type;
+            }
             return OOResolver.getOOType(expression);
         }
     };
 
     @Override
-    public PsiType getType() {
+    public PsiType getType()
+    {
         return JavaResolveCache.getInstance(getProject()).getType(this, OO_TYPE_EVALUATOR);
     }
 }
